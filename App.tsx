@@ -323,7 +323,7 @@ const App: React.FC = () => {
                                 <tbody>
                                     {filteredDailyTotals.map(({ day, total }) => {
                                         const cellValue = revenueData[day] || '';
-                                        const { hasOvernight, total: cellTotal } = processDayRevenue(cellValue, overnightThreshold * 1000);
+                                        const { hasOvernight, total: cellTotal, overnightCount } = processDayRevenue(cellValue, overnightThreshold * 1000);
                                         return (
                                             <tr key={day} className="border-b hover:bg-gray-50">
                                                 <td className="px-4 py-2 font-medium text-gray-900">{day}</td>
@@ -334,7 +334,17 @@ const App: React.FC = () => {
                                                     </div>
                                                     {cellValue && <div className="text-xs text-primary-700 font-medium text-right pr-1 pt-0.5" aria-label={`Tổng phụ cho ngày ${day}`}>= {formatNumber(cellTotal)}</div>}
                                                 </td>
-                                                <td className="px-4 py-2 font-semibold text-right text-primary-700">{formatCurrency(total)}</td>
+                                                <td className="px-4 py-2 text-right">
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        {overnightCount > 0 && (
+                                                            <div className="flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded-full" title={`${overnightCount} lượt qua đêm`}>
+                                                                <MoonIcon className="h-3 w-3" />
+                                                                <span>{overnightCount}</span>
+                                                            </div>
+                                                        )}
+                                                        <span className="font-semibold text-primary-700">{formatCurrency(total)}</span>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         );
                                     })}
