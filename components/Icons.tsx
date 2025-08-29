@@ -106,7 +106,7 @@ export const MoonIcon: React.FC<IconProps> = ({ className }) => (
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
-      viewBox="0 0 24 24"
+      viewBox="0 0 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -123,7 +123,7 @@ export const TableIcon: React.FC<IconProps> = ({ className }) => (
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
-      viewBox="0 0 24 24"
+      viewBox="0 0 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -137,3 +137,60 @@ export const TableIcon: React.FC<IconProps> = ({ className }) => (
       <path d="M8 16h4" />
     </svg>
   );
+  
+export const UploadCloudIcon: React.FC<IconProps> = ({ className }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+      <path d="M12 12v9" />
+      <path d="m16 16-4-4-4 4" />
+    </svg>
+  );
+
+export const SearchIcon: React.FC<IconProps> = ({ className }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+);
+
+export const UsersIcon: React.FC<IconProps> = ({ className }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+);
