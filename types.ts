@@ -1,8 +1,6 @@
 
 export interface RevenueData {
-  [day: number]: {
-    [room: string]: string;
-  };
+  [day: number]: string;
 }
 
 export interface DailyTotal {
