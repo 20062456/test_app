@@ -20,7 +20,7 @@ const formatNumber = (value: number): string => {
 };
 
 // Helper to process a day's raw revenue string into structured data
-const processDayRevenue = (value: string): { total: number; hasOvernight: boolean; overnightCount: number } => {
+const processDayRevenue = (value: string, overnightThresholdVND: number): { total: number; hasOvernight: boolean; overnightCount: number } => {
     if (!value?.trim()) return { total: 0, hasOvernight: false, overnightCount: 0 };
     let hasOvernight = false;
     let overnightCount = 0;
@@ -31,7 +31,7 @@ const processDayRevenue = (value: string): { total: number; hasOvernight: boolea
             const cleanedEntry = entry.replace(/[\.,]/g, '');
             const multipliedValue = (parseInt(cleanedEntry, 10) || 0) * 1000;
             
-            if (multipliedValue > 150000) { // Threshold for overnight stay
+            if (multipliedValue > overnightThresholdVND) {
                 hasOvernight = true;
                 overnightCount++;
             }
@@ -50,10 +50,14 @@ const getMonthSummaryForDate = (date: Date): MonthSummary => {
     const savedDataStr = localStorage.getItem(storageKey);
     const data: RevenueData = savedDataStr ? JSON.parse(savedDataStr) : {};
 
+    const savedThresholdStr = localStorage.getItem(`${LOCAL_STORAGE_PREFIX}-overnightThreshold`);
+    const overnightThreshold = savedThresholdStr ? parseInt(savedThresholdStr, 10) : 150;
+    const overnightThresholdVND = overnightThreshold * 1000;
+
     let monthlyTotal = 0, totalOvernightStays = 0, daysWithRevenue = 0;
     const dailyTotals = Array.from({ length: dInMonth }, (_, i) => {
         const day = i + 1;
-        const { total, overnightCount } = processDayRevenue(data[day] || '');
+        const { total, overnightCount } = processDayRevenue(data[day] || '', overnightThresholdVND);
         monthlyTotal += total;
         if (total > 0) daysWithRevenue++;
         totalOvernightStays += overnightCount;
@@ -124,6 +128,15 @@ const App: React.FC = () => {
         const savedMode = localStorage.getItem(`${LOCAL_STORAGE_PREFIX}-viewMode`);
         return (savedMode === 'daily' || savedMode === 'monthly' || savedMode === 'compare') ? savedMode : 'daily';
     });
+    
+    const [overnightThreshold, setOvernightThreshold] = useState<number>(() => {
+        const savedThreshold = localStorage.getItem(`${LOCAL_STORAGE_PREFIX}-overnightThreshold`);
+        return savedThreshold ? parseInt(savedThreshold, 10) : 150;
+    });
+
+    useEffect(() => {
+        localStorage.setItem(`${LOCAL_STORAGE_PREFIX}-overnightThreshold`, String(overnightThreshold));
+    }, [overnightThreshold]);
 
     // State for comparison view
     const [comparisonDateA, setComparisonDateA] = useState<Date>(() => new Date());
@@ -163,7 +176,7 @@ const App: React.FC = () => {
         
         const dailyTotals = Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
-            const { total, overnightCount } = processDayRevenue(revenueData[day] || '');
+            const { total, overnightCount } = processDayRevenue(revenueData[day] || '', overnightThreshold * 1000);
             monthlyTotal += total;
             if(total > 0) daysWithRevenue++;
             totalOvernightStays += overnightCount;
@@ -179,7 +192,7 @@ const App: React.FC = () => {
             dailyTotals,
             monthName: currentDate.toLocaleString('vi-VN', { month: 'long', year: 'numeric' })
         };
-    }, [revenueData, daysInMonth, currentDate]);
+    }, [revenueData, daysInMonth, currentDate, overnightThreshold]);
 
 
     const summaryA = useMemo(() => getMonthSummaryForDate(comparisonDateA), [comparisonDateA]);
@@ -252,7 +265,27 @@ const App: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                             <SummaryCard title="Tổng doanh thu tháng" value={formatCurrency(currentMonthSummary.monthlyTotal)} icon={<DollarSignIcon className="h-6 w-6 text-primary-600"/>} />
                             <SummaryCard title="Doanh thu trung bình ngày" value={formatCurrency(currentMonthSummary.averageDailyRevenue)} icon={<BarChartIcon className="h-6 w-6 text-primary-600"/>} />
-                            <SummaryCard title="Tổng lượt qua đêm (>150k)" value={formatNumber(currentMonthSummary.totalOvernightStays)} icon={<MoonIcon className="h-6 w-6 text-primary-600"/>} />
+                            <SummaryCard title={`Tổng lượt qua đêm (> ${formatNumber(overnightThreshold)}k)`} value={formatNumber(currentMonthSummary.totalOvernightStays)} icon={<MoonIcon className="h-6 w-6 text-primary-600"/>} />
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+                            <label htmlFor="overnightThreshold" className="block text-sm font-medium text-gray-700">Mốc tính qua đêm</label>
+                            <div className="mt-1 relative rounded-md shadow-sm">
+                                <input
+                                    type="number"
+                                    id="overnightThreshold"
+                                    value={overnightThreshold}
+                                    onChange={e => setOvernightThreshold(parseInt(e.target.value, 10) || 0)}
+                                    className="w-full pl-3 pr-12 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    placeholder="VD: 150"
+                                    aria-describedby="price-currency"
+                                />
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span className="text-gray-500 sm:text-sm" id="price-currency">
+                                        nghìn VNĐ
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="mt-2 text-xs text-gray-500">Nhập 150 nghĩa là các khoản thu trên 150.000 VNĐ được tính là qua đêm.</p>
                         </div>
                     </>
                 )}
@@ -290,7 +323,7 @@ const App: React.FC = () => {
                                 <tbody>
                                     {filteredDailyTotals.map(({ day, total }) => {
                                         const cellValue = revenueData[day] || '';
-                                        const { hasOvernight, total: cellTotal } = processDayRevenue(cellValue);
+                                        const { hasOvernight, total: cellTotal } = processDayRevenue(cellValue, overnightThreshold * 1000);
                                         return (
                                             <tr key={day} className="border-b hover:bg-gray-50">
                                                 <td className="px-4 py-2 font-medium text-gray-900">{day}</td>
