@@ -1,0 +1,5 @@
+{
+  "name": "Hotel Revenue Calculator",
+  "description": "An intuitive application to calculate and visualize daily and monthly hotel room revenue. Input daily earnings for each room and get instant totals and insightful charts in Vietnamese Dong (VND).",
+  "requestFramePermissions": []
+}
